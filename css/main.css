@@ -34,7 +34,7 @@ body{
     text-align: center;
 }
 
-.not-hit {
+.show {
     background-color: yellow;
 }
 
@@ -44,4 +44,8 @@ body{
 
 .miss {
     background-color: aqua;
+}
+
+.moving {
+    opacity: 80%;
 }

@@ -113,12 +113,11 @@ const domManager = (()=>{
     }
 
     function addShipMoveEventListener(player, gameboard){
-        const ships = document.querySelectorAll(`#${player.getName()}-div .grid.not-hit`);
+        const ships = document.querySelectorAll(`#${player.getName()}-div .grid.show`);
         console.log(ships);
         ships.forEach(ship=>{
             console.log(ship);
             ship.addEventListener('mouseover', ()=>{
-                console.log("HOVERING");
                 const shipGroup = document.querySelectorAll(`#${player.getName()}-div .grid[data-ship_id="${ship.dataset.ship_id}"]`);
                 console.log(shipGroup);
                 shipGroup.forEach(s=>{
@@ -126,10 +125,18 @@ const domManager = (()=>{
                 });
             });
             ship.addEventListener('mouseout', ()=>{
-                console.log("HOVERING");
                 const shipGroup = document.querySelectorAll(`#${player.getName()}-div .grid[data-ship_id="${ship.dataset.ship_id}"]`);
                 console.log(shipGroup);
                 shipGroup.forEach(s=>{
+                    s.style.outline = 'none';
+                });
+            });
+            ship.addEventListener('click', ()=>{
+                const shipGroup = document.querySelectorAll(`#${player.getName()}-div .grid[data-ship_id="${ship.dataset.ship_id}"]`);
+                shipGroup.forEach(s=>{
+                    s.removeAttribute('data-ship_id');
+                    // s.classList.toggle('not-hit');
+                    s.classList.toggle('moving');
                     s.style.outline = 'none';
                 });
             });
@@ -157,6 +164,14 @@ const domManager = (()=>{
         });
     }
 
+    function hideShips(){
+        const grids = document.querySelectorAll(`.grid.show`);
+
+        grids.forEach(grid=>{
+            grid.classList.toggle('show');
+        });
+    }
+
     function placeShip(player, startCoord, ship){
         const shipLength = ship.getLength();
         const shipAxis = ship.getAxis();
@@ -165,15 +180,14 @@ const domManager = (()=>{
             const row = startCoord[0] + i*shipAxis[0];
             const col = startCoord[1] + i*shipAxis[1];
             const grid = document.querySelector(`#${player.getName()}-div .grid[data-row="${row}"][data-col="${col}"]`);
-            grid.dataset.ship_id = ship.id;
-
-            grid.classList.add('not-hit');
+            // grid.dataset.ship_id = ship.id;
+            grid.classList.add('show');
         }
 
         return true;
     }
 
-    return {initializeBoard, addGridAttackEventListener, placeShip, addShipMoveEventListener};
+    return {initializeBoard, addGridAttackEventListener, placeShip, addShipMoveEventListener, hideShips};
 })();
 
 
@@ -220,11 +234,15 @@ const gameManager = ((n,m)=>{
     }
 
     // Placing Phase
-    domManager.addShipMoveEventListener(p1, g1);
+    // domManager.addShipMoveEventListener(p1, g1);
+    // domManager.addShipMoveEventListener(p2, g2);
+
+    // Hide Phase
+    // domManager.hideShips();
 
     // Game Phase
-    // domManager.addGridAttackEventListener(p1, g1);
-    // domManager.addGridAttackEventListener(p2, g2);
+    domManager.addGridAttackEventListener(p1, g1);
+    domManager.addGridAttackEventListener(p2, g2);
 })(10,10);
 
 
@@ -246,3 +264,9 @@ const gameManager = ((n,m)=>{
 // console.log(s1.isSunk());
 
 // console.log(g1.recieveAttack([1,3]))
+
+/*
+TODO:
+    - Allow user to move ships
+    - Implement Game Phase
+*/
