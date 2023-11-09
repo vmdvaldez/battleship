@@ -31,8 +31,8 @@ function GameBoard (n,m){
         const endCoord = [startCoord[0] + shipLength * shipAxis[0], startCoord[1] + shipLength * shipAxis[1]];
 
         if(!inBounds(startCoord) || !inBounds(endCoord)){
-            console.log("Not In Bounds");
-            console.log("Handle case");
+            // console.log("Not In Bounds");
+            // console.log("Handle case");
             return false;
         }
 
@@ -49,7 +49,7 @@ function GameBoard (n,m){
             board[startCoord[0] + i*shipAxis[0]][startCoord[1] + i*shipAxis[1]] = ship;
         }
 
-        console.log(board);
+        // console.log(board);
         return true;
     };
 
@@ -72,8 +72,12 @@ function GameBoard (n,m){
         return ret;
     }
     
+    const getShip = (row, col) => {
+        if (typeof(board[row][col]) != 'object') return undefined;
+        return board[row][col]
+    };
  
-    return {placeShip, recieveAttack};
+    return {placeShip, recieveAttack, getShip};
 }
 
 function Player (_name,_turn){
@@ -90,7 +94,12 @@ function Player (_name,_turn){
 }
 
 const domManager = (()=>{
+    let rows;
+    let cols;
+
     function initializeBoard(n,m){
+        rows = n;
+        cols = m;
         const content = document.querySelectorAll('.content');
 
         content.forEach((content)=>{
@@ -112,33 +121,85 @@ const domManager = (()=>{
         }); 
     }
 
+    function inBounds(coord){
+        return 0 <= coord[0] && coord[0] < rows && 0 <= coord[1] && coord[1] < cols;
+    }
+
     function addShipMoveEventListener(player, gameboard){
+        const grids = document.querySelectorAll(`#${player.getName()}-div .grid`);
         const ships = document.querySelectorAll(`#${player.getName()}-div .grid.show`);
-        console.log(ships);
         ships.forEach(ship=>{
-            console.log(ship);
+            const shipGroup = document.querySelectorAll(`#${player.getName()}-div .grid[data-ship_id="${ship.dataset.ship_id}"]`);
+
             ship.addEventListener('mouseover', ()=>{
-                const shipGroup = document.querySelectorAll(`#${player.getName()}-div .grid[data-ship_id="${ship.dataset.ship_id}"]`);
-                console.log(shipGroup);
                 shipGroup.forEach(s=>{
-                    s.style.outline = '2px solid cyan';
+                    s.classList.toggle('outline');
                 });
             });
             ship.addEventListener('mouseout', ()=>{
-                const shipGroup = document.querySelectorAll(`#${player.getName()}-div .grid[data-ship_id="${ship.dataset.ship_id}"]`);
-                console.log(shipGroup);
                 shipGroup.forEach(s=>{
-                    s.style.outline = 'none';
+                    s.classList.toggle('outline');
                 });
             });
             ship.addEventListener('click', ()=>{
-                const shipGroup = document.querySelectorAll(`#${player.getName()}-div .grid[data-ship_id="${ship.dataset.ship_id}"]`);
+                // ships.forEach(s=>{
+                //     s.style.pointerEvents = 'none';
+                // });
+
+                let shipObj = gameboard.getShip(shipGroup[0].dataset.row, shipGroup[0].dataset.col);
+                const shipAxis = shipObj.getAxis();
+                const shipLength = shipObj.getLength();
+
+                console.log(shipObj);
+                
                 shipGroup.forEach(s=>{
-                    s.removeAttribute('data-ship_id');
+                    // s.removeAttribute('data-ship_id');
                     // s.classList.toggle('not-hit');
                     s.classList.toggle('moving');
-                    s.style.outline = 'none';
                 });
+
+                function moveMouseOver(e){
+                    const grid = e.target;
+                    const gridCoord = [+grid.dataset.row, +grid.dataset.col];
+                    if (!inBounds(gridCoord) || 
+                    !inBounds([gridCoord[0] + (shipLength-1)*shipAxis[0], gridCoord[1] + (shipLength-1)* shipAxis[1]])){
+                        console.log("OUT OF BOUNDS");
+                        return;
+                    } 
+
+                    for(let i = 0; i < shipLength; i++){
+                        const row = gridCoord[0] + i*shipAxis[0];
+                        const col = gridCoord[1] + i*shipAxis[1];
+                        const g = document.querySelector(`#${player.getName()}-div .grid[data-row="${row}"][data-col="${col}"]`);
+                        if(g.dataset.ship_id) g.classList.toggle('invalid-outline');
+                        g.classList.toggle('outline');
+                    }
+                }
+                function moveMouseOut(e){
+                    const grid = e.target;
+                    const gridCoord = [+grid.dataset.row, +grid.dataset.col];
+
+                    if (!inBounds(gridCoord) || 
+                    !inBounds([gridCoord[0] + (shipLength-1)*shipAxis[0], gridCoord[1] + (shipLength-1)* shipAxis[1]])){
+                        console.log("OUT OF BOUNDS");
+                        return;
+                    } 
+
+                    for(let i = 0; i < shipLength; i++){
+                        const row = gridCoord[0] + i*shipAxis[0];
+                        const col = gridCoord[1] + i*shipAxis[1];
+                        const g = document.querySelector(`#${player.getName()}-div .grid[data-row="${row}"][data-col="${col}"]`);
+                        if(g.dataset.ship_id) g.classList.toggle('invalid-outline');
+                        g.classList.toggle('outline');
+                    }
+                }
+                grids.forEach(grid=>{
+                    if(grid.dataset.ship_id != undefined) return;
+
+                    grid.addEventListener('mouseover', moveMouseOver);
+                    grid.addEventListener('mouseout', moveMouseOut);
+                });
+
             });
         });
 
@@ -180,7 +241,7 @@ const domManager = (()=>{
             const row = startCoord[0] + i*shipAxis[0];
             const col = startCoord[1] + i*shipAxis[1];
             const grid = document.querySelector(`#${player.getName()}-div .grid[data-row="${row}"][data-col="${col}"]`);
-            // grid.dataset.ship_id = ship.id;
+            grid.dataset.ship_id = ship.id;
             grid.classList.add('show');
         }
 
@@ -234,15 +295,15 @@ const gameManager = ((n,m)=>{
     }
 
     // Placing Phase
-    // domManager.addShipMoveEventListener(p1, g1);
-    // domManager.addShipMoveEventListener(p2, g2);
+    domManager.addShipMoveEventListener(p1, g1);
+    domManager.addShipMoveEventListener(p2, g2);
 
     // Hide Phase
     // domManager.hideShips();
 
     // Game Phase
-    domManager.addGridAttackEventListener(p1, g1);
-    domManager.addGridAttackEventListener(p2, g2);
+    // domManager.addGridAttackEventListener(p1, g1);
+    // domManager.addGridAttackEventListener(p2, g2);
 })(10,10);
 
 
@@ -267,6 +328,8 @@ const gameManager = ((n,m)=>{
 
 /*
 TODO:
-    - Allow user to move ships
+    - Allow user to move ships -- implement clicking to move
     - Implement Game Phase
+    - Allow rotation
+    
 */

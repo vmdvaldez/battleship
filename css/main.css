@@ -49,3 +49,11 @@ body{
 .moving {
     opacity: 80%;
 }
+
+.outline {
+    outline: cyan solid 3px;
+}
+
+.invalid-outline {
+    outline: red solid 3px;
+}
