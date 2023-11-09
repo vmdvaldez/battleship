@@ -16,11 +16,11 @@ body{
 }
 
 #p1-div {
-    background-color: red;
+    background-color: maroon;
 }
 
 #p2-div {
-    background-color: blue;
+    background-color: teal;
 }
 
 .content {
@@ -34,8 +34,12 @@ body{
     text-align: center;
 }
 
+.not-hit {
+    background-color: yellow;
+}
+
 .hit {
-    background-color: white;
+    background-color: red;
 }
 
 .miss {
