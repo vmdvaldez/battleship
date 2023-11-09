@@ -1,0 +1,43 @@
+body{
+    display: flex;
+
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    width: 100vw;
+}
+
+#p1-div, #p2-div{
+    flex: 1;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#p1-div {
+    background-color: red;
+}
+
+#p2-div {
+    background-color: blue;
+}
+
+.content {
+    height: 50%;
+    aspect-ratio: 1/1;
+    background-color: green;
+}
+
+.grid{
+    border: 2px solid black;
+    text-align: center;
+}
+
+.hit {
+    background-color: white;
+}
+
+.miss {
+    background-color: aqua;
+}
